@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Detalhes do Pedido - Magic Travel" />
+  <title>Detalhes do Pedido - Magic Travel</title>
+
+  <!-- CSS do Bootstrap -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Bootstrap Icons (opcional) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css"
+  />
+
+  <!-- Font Awesome (opcional) -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Google Fonts (Montserrat) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /************************************************************
+     * ESTILOS GERAIS
+     ************************************************************/
+    body {
+      font-family: "Montserrat", sans-serif;
+      margin: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      /* Importante: #sidebar-container e .order-details
+         são irmãos diretos dentro do <body>. */
+    }
+
+    /************************************************************
+     * SIDEBAR (#sidebar-container)
+     ************************************************************/
+    #sidebar-container {
+      width: 260px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background-color: #0d112d;
+      color: #fff;
+      overflow-y: auto;
+      box-shadow: 3px 0 6px rgba(0, 0, 0, 0.2);
+      transition: height 0.3s ease;
+    }
+
+    .sidebar-loading {
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    /* Quando colapsa a sidebar */
+    #sidebar-container.collapsed {
+      height: 56px;
+      overflow: hidden;
+    }
+
+    /* Empurrar conteúdo quando colapsada */
+    #sidebar-container.collapsed ~ .order-details {
+      margin-left: 56px;
+      width: calc(100% - 56px);
+      transition: all 0.3s ease;
+    }
+
+    /************************************************************
+     * CONTEÚDO PRINCIPAL (.order-details)
+     ************************************************************/
+    .order-details {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      padding: 40px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      min-height: 100vh; /* ocupar a tela */
+      transition: all 0.3s ease-in-out;
+    }
+
+    .order-details h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #4a4a4a;
+    }
+    .order-details h3 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #4a4a4a;
+      animation: fadeIn 1.2s ease-in-out;
+      text-align: center;
+    }
+    .order-details p {
+      font-size: 16px;
+      color: #ff6f61;
+      margin-bottom: 20px;
+    }
+
+    .back-button {
+      background-color: #ff6f61;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 20px;
+      margin-right: auto;
+      transition: background-color 0.3s ease;
+    }
+    .back-button:hover {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    /************************************************************
+     * TABELAS (.emissao-tabela)
+     ************************************************************/
+    .emissao-tabela {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      table-layout: fixed;
+      animation: fadeIn 1.8s ease-in-out;
+    }
+    .emissao-tabela thead th {
+      text-align: center;
+      background-color: #222e3c;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid #d9d9d9;
+      padding: 10px;
+      text-transform: capitalize;
+    }
+    .emissao-tabela td {
+      color: #333;
+      background-color: #f9f9f9;
+      text-align: center;
+      padding: 12px;
+      border: 1px solid #d9d9d9;
+      word-wrap: break-word;
+    }
+    .emissao-tabela input,
+    .emissao-tabela select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    /* Arredondar cantos */
+    .emissao-tabela thead th:first-child {
+      border-top-left-radius: 12px;
+    }
+    .emissao-tabela thead th:last-child {
+      border-top-right-radius: 12px;
+    }
+    .emissao-tabela tbody tr:last-child td:first-child {
+      border-bottom-left-radius: 12px;
+    }
+    .emissao-tabela tbody tr:last-child td:last-child {
+      border-bottom-right-radius: 12px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .add-row-button {
+      background-color: #1cbb8c;
+      color: #fff;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+      animation: fadeIn 2s ease-in-out;
+      align-self: center;
+    }
+    .add-row-button:hover {
+      background-color: #17a37a;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .delete-row-button {
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #dc3545;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .delete-row-button:hover {
+      transform: scale(1.2);
+      color: #a71d2a;
+    }
+    .delete-row-button i {
+      pointer-events: none;
+    }
+
+    .hr3 {
+      border: 0;
+      height: 2px;
+      margin: 30px 0;
+      background-image: linear-gradient(to right, transparent, #ccc, transparent);
+    }
+
+    /************************************************************
+     * RESPONSIVIDADE
+     ************************************************************/
+    @media (max-width: 1024px) {
+      #sidebar-container {
+        position: relative;
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+      }
+      .order-details {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+      }
+      #sidebar-container.collapsed ~ .order-details {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .order-details {
+        padding: 10px;
+      }
+      .order-details h1 {
+        font-size: 20px;
+      }
+      .order-details h3 {
+        font-size: 18px;
+      }
+      .back-button {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- SIDEBAR -->
+  <div id="sidebar-container">
+    <div class="sidebar-loading">Carregando...</div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="order-details">
+    <a href="pages-orders.html" class="back-button">Voltar para Página de Pedidos</a>
+    <h1>Detalhes do Pedido</h1>
+    <p>ID do Pedido: <span id="pedido-id">Carregando...</span></p>
+
+    <!-- INFORMAÇÕES DO PEDIDO -->
+    <div class="section">
+      <h3>Informações do Pedido</h3>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Destino</th>
+            <th>Item/Categoria</th>
+            <th>Data Venda</th>
+          </tr>
+        </thead>
+        <tbody id="order-info"></tbody>
+      </table>
+    </div>
+
+    <hr class="hr3">
+
+    <!-- INFORMAÇÕES DO CLIENTE -->
+    <div class="section">
+      <h3>Informações do Cliente</h3>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>CPF</th>
+            <th>Data de Nascimento</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="customer-info"></tbody>
+      </table>
+    </div>
+
+    <hr class="hr3">
+
+    <!-- INFORMAÇÕES FINANCEIRAS -->
+    <div class="section">
+      <h3>Informações Financeiras</h3>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Gateway</th>
+            <th>Data da Venda</th>
+            <th>Valor Total da Venda</th>
+            <th>Valor Recebimento</th>
+            <th>Data de Recebimento</th>
+            <th>Cambio do Dia</th>
+          </tr>
+        </thead>
+        <tbody id="financial-info"></tbody>
+      </table>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Valor Comissão</th>
+            <th>Meio Pagamento</th>
+            <th>Bandeira Cartão</th>
+            <th>Parcelas</th>
+            <th>Valor Venda</th>
+            <th>Custo</th>
+            <th>Fornecedor</th>
+          </tr>
+        </thead>
+        <tbody id="financial-info-2"></tbody>
+      </table>
+    </div>
+
+    <hr class="hr3">
+
+    <!-- INFORMAÇÕES COMERCIAIS -->
+    <div class="section">
+      <h3>Informações Comerciais</h3>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Origem do Cliente</th>
+            <th>Cliente de (30%)</th>
+            <th>Efetivado por (70%)</th>
+            <th>Comissão Agente</th>
+          </tr>
+        </thead>
+        <tbody id="commercial-info"></tbody>
+      </table>
+    </div>
+
+    <hr class="hr3">
+
+    <!-- INFORMAÇÕES ADICIONAIS -->
+    <div class="section">
+      <h3>Informações Adicionais</h3>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Observações Operacionais</th>
+            <th>Observações Financeiras</th>
+          </tr>
+        </thead>
+        <tbody id="additional-info"></tbody>
+      </table>
+    </div>
+
+    <hr class="hr3">
+
+    <!-- PLANILHA DO PEDIDO -->
+    <div class="section planilha-pedido">
+      <h3>Planilha do Pedido</h3>
+
+      <!-- Primeira linha: Câmbio -->
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Dólar Câmbio</th>
+            <th>Dólar Magic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="number" id="dolar-cambio" placeholder="Digite o câmbio" /></td>
+            <td id="dolar-magic">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Tabela principal -->
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Data</th>
+            <th>Idade</th>
+            <th>Net U$</th>
+            <th>Lobista</th>
+            <th>Número</th>
+            <th>Total U$</th>
+            <th>Net R$</th>
+            <th>Margem</th>
+            <th>Pix</th>
+            <th>Taxa</th>
+            <th>10x</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="spreadsheet-info"></tbody>
+        <tfoot>
+          <tr style="font-weight: bold; background-color: #f0f0f0;">
+            <td colspan="6" style="text-align: right;">Totais:</td>
+            <td id="resumo-total-dollar">0.00</td>
+            <td id="resumo-net-real">0.00</td>
+            <td></td>
+            <td id="resumo-total-pix">0.00</td>
+            <td></td>
+            <td id="resumo-total-10x">0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="button-container">
+        <button id="add-row-button" class="add-row-button">Adicionar Linha</button>
+        <button class="add-row-button" onclick="salvarPlanilha()">Salvar Planilha</button>
+      </div>
+    </div>
+
+    <hr class="hr3">
+
+    <!-- EMISSÃO -->
+    <div class="section">
+      <h3>Emissão</h3>
+      <table class="emissao-tabela">
+        <thead>
+          <tr>
+            <th>Itens</th>
+            <th>Valor (U$)</th>
+            <th>Data de Uso</th>
+            <th>Data de Pagamento</th>
+            <th>Identificador</th>
+            <th>Fornecedor</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="emission-info"></tbody>
+      </table>
+      <button class="add-row-button" onclick="salvarEmissao()">Salvar Emissão</button>
+    </div>
+  </div>
+
+  <!-- JS do Bootstrap (Bundle) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    /************************************************************
+     * 1) CARREGAR SIDEBAR
+     ************************************************************/
+    async function loadSidebar() {
+      try {
+        const resp = await fetch('sidebar.html', { credentials: 'include' });
+        if (!resp.ok) throw new Error('Erro ao carregar sidebar.html');
+        const sidebarHTML = await resp.text();
+        const sidebarDiv  = document.getElementById('sidebar-container');
+        sidebarDiv.innerHTML = sidebarHTML;
+
+        // Se quiser ativar o link "pedidos"
+        const pedidosLink = sidebarDiv.querySelector('[data-menu="pedidos"]');
+        if (pedidosLink) pedidosLink.classList.add('active');
+
+        // Inicializar toggle
+        inicializarSidebarToggle();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('sidebar-container').innerHTML = '<p>Erro ao carregar a sidebar.</p>';
+      }
+    }
+
+    /************************************************************
+     * 2) INICIALIZAR O TOGGLER (COLLAPSE)
+     ************************************************************/
+    function inicializarSidebarToggle() {
+      const sidebar        = document.getElementById('sidebar-container');
+      const sidebarToggler = document.querySelector('.sidebar-toggler');
+      const menuToggler    = document.querySelector('.menu-toggler');
+      if (!sidebar || !sidebarToggler || !menuToggler) return;
+
+      const collapsedHeight = '56px';
+      const fullHeight      = 'calc(100vh - 32px)';
+
+      // Clique no botão principal (sidebar-toggler)
+      sidebarToggler.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+      });
+
+      // Função p/ trocar altura e texto do menu
+      const toggleMenu = (isMenuActive) => {
+        sidebar.style.height = isMenuActive ? `${sidebar.scrollHeight}px` : collapsedHeight;
+        menuToggler.querySelector('span').innerText = isMenuActive ? 'close' : 'menu';
+      };
+
+      // Botão "menu" (em telas menores)
+      menuToggler.addEventListener('click', () => {
+        toggleMenu(sidebar.classList.toggle('menu-active'));
+      });
+
+      // Redimensionar
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+          sidebar.style.height = fullHeight;
+        } else {
+          sidebar.classList.remove('collapsed');
+          sidebar.style.height = 'auto';
+          toggleMenu(sidebar.classList.contains('menu-active'));
+        }
+      });
+    }
+
+    /************************************************************
+     * 3) CARREGAR DADOS DO PEDIDO
+     ************************************************************/
+    function getPedidoId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('pedido') || 'Não informado';
+    }
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const d = new Date(dateString);
+      return isNaN(d) ? '' : d.toLocaleDateString('pt-BR');
+    }
+
+    async function loadOrderDetails() {
+      const pedidoId = getPedidoId();
+      if (pedidoId === 'Não informado') {
+        alert('ID do pedido não informado.');
+        return;
+      }
+      try {
+        // Ajuste a URL da API de pedidos se precisar
+        const url = `https://www.magictraveltur.com/api_pedidos.php?id_pedido=${pedidoId}`;
+        const resp = await fetch(url, { credentials: 'include' });
+        if (!resp.ok) throw new Error(`Erro ao buscar pedido: ${resp.status}`);
+        const data = await resp.json();
+
+        let pedido;
+        if (Array.isArray(data)) {
+          if (!data.length) throw new Error('Nenhum pedido encontrado.');
+          pedido = data[0];
+        } else {
+          pedido = data;
+        }
+
+        document.getElementById('pedido-id').textContent = pedidoId;
+
+        // Preenche "Informações do Pedido"
+        document.getElementById('order-info').innerHTML = `
+          <tr>
+            <td>
+              <select>
+                <option value="Pagamento recebido"   ${pedido.status === 'Pagamento recebido'   ? 'selected' : ''}>Pagamento recebido</option>
+                <option value="Envio de contrato"    ${pedido.status === 'Envio de contrato'    ? 'selected' : ''}>Envio de contrato</option>
+                <option value="Aguardando Emissão"   ${pedido.status === 'Aguardando Emissão'   ? 'selected' : ''}>Aguardando Emissão</option>
+                <option value="Emissão Bloqueada"    ${pedido.status === 'Emissão Bloqueada'    ? 'selected' : ''}>Emissão Bloqueada</option>
+                <option value="Emitido por Completo" ${pedido.status === 'Emitido por Completo' ? 'selected' : ''}>Emitido por Completo</option>
+                <option value="Emissão Parcial"      ${pedido.status === 'Emissão Parcial'      ? 'selected' : ''}>Emissão Parcial</option>
+                <option value="Envio de Brindes"     ${pedido.status === 'Envio de Brindes'     ? 'selected' : ''}>Envio de Brindes</option>
+                <option value="Concluído"            ${pedido.status === 'Concluído'            ? 'selected' : ''}>Concluído</option>
+              </select>
+            </td>
+            <td>${pedido.destino || ''}</td>
+            <td>${pedido.item || ''}</td>
+            <td>${formatDate(pedido.data_venda)}</td>
+          </tr>
+        `;
+
+        // Preenche "Informações do Cliente"
+        document.getElementById('customer-info').innerHTML = `
+          <tr>
+            <td>${pedido.nome_comprador || ''}</td>
+            <td>${pedido.email || ''}</td>
+            <td>${pedido.telefone || ''}</td>
+            <td>${pedido.cpf || ''}</td>
+            <td>${formatDate(pedido.data_nascimento)}</td>
+            <td>${pedido.uf || ''}</td>
+          </tr>
+        `;
+
+        // Financeiras (1)
+        document.getElementById('financial-info').innerHTML = `
+          <tr>
+            <td>${pedido.gateway || '<input type="text" placeholder="Gateway">'}</td>
+            <td>${pedido.data_pgto ? formatDate(pedido.data_pgto) : '<input type="date">'}</td>
+            <td>${pedido.recebido ? 'R$ ' + parseFloat(pedido.recebido).toFixed(2) : '<input type="number" placeholder="Recebido">'}</td>
+            <td>${pedido.valor_repassado ? 'R$ ' + parseFloat(pedido.valor_repassado).toFixed(2) : '<input type="number" placeholder="Valor Repassado">'}</td>
+            <td>${pedido.data_repasse ? formatDate(pedido.data_repasse) : '<input type="date">'}</td>
+            <td>${pedido.cambio_dia || '<input type="number" placeholder="Câmbio do Dia">'}</td>
+          </tr>
+        `;
+
+        // Financeiras (2)
+        document.getElementById('financial-info-2').innerHTML = `
+          <tr>
+            <td>${pedido.valor_comissao ? 'R$ ' + parseFloat(pedido.valor_comissao).toFixed(2) : '<input type="number" placeholder="Valor Comissão">'}</td>
+            <td>${pedido.meio_pgto || '<input type="text" placeholder="Meio Pgto">'}</td>
+            <td>${pedido.bandeira_cartao || '<input type="text" placeholder="Bandeira Cartão">'}</td>
+            <td>${pedido.parcelas || '<input type="number" placeholder="Parcelas">'}</td>
+            <td>${pedido.valor_venda ? 'R$ ' + parseFloat(pedido.valor_venda).toFixed(2) : '<input type="number" placeholder="Valor Venda">'}</td>
+            <td>${pedido.custo ? 'R$ ' + parseFloat(pedido.custo).toFixed(2) : '<input type="number" placeholder="Custo">'}</td>
+            <td>${pedido.fornecedor || '<input type="text" placeholder="Fornecedor">'}</td>
+          </tr>
+        `;
+
+        // Comerciais
+        document.getElementById('commercial-info').innerHTML = `
+          <tr>
+            <td>${pedido.origem_cliente || '<input type="text" placeholder="Origem do Cliente">'}</td>
+            <td>${pedido.cliente_de || '<input type="text" placeholder="Cliente de (30%)">'}</td>
+            <td>${pedido.efetivado_por || '<input type="text" placeholder="Efetivado por (70%)">'}</td>
+            <td>${pedido.comissao_do_agente || '<input type="text" placeholder="Comissão Agente">'}</td>
+          </tr>
+        `;
+
+        // Adicionais
+        document.getElementById('additional-info').innerHTML = `
+          <tr>
+            <td>${pedido.observacoes_operacionais || '<input type="text" placeholder="Observações Operacionais">'}</td>
+            <td>${pedido.observacoes_financeiras || '<input type="text" placeholder="Observações Financeiras">'}</td>
+          </tr>
+        `;
+
+        // Carrega Planilha
+        await loadPlanilhaPedido();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao carregar pedido: ' + err.message);
+      }
+    }
+
+    /************************************************************
+     * 4) CARREGAR PLANILHA (api_planilhas.php)
+     ************************************************************/
+    window.planilhasEmMemoria = [];
+
+    async function loadPlanilhaPedido() {
+      const pedidoId = document.getElementById('pedido-id').textContent;
+      if (!pedidoId) return;
+
+      try {
+        const url = `https://magictraveltur.com/api_planilhas.php?id_pedido=${pedidoId}&v=${Date.now()}`;
+        const resp = await fetch(url, {
+          cache: 'no-store',
+          credentials: 'include'
+        });
+        if (!resp.ok) throw new Error(`Erro ao buscar planilhas: ${resp.status}`);
+
+        const planilhas = await resp.json();
+        window.planilhasEmMemoria = planilhas || [];
+
+        document.getElementById('spreadsheet-info').innerHTML = '';
+        document.getElementById('emission-info').innerHTML    = '';
+
+        if (planilhas.length > 0) {
+          montarPlanilhaPrincipal(planilhas);
+          document.getElementById('dolar-cambio').value      = planilhas[0].dolar_cambio || 0;
+          document.getElementById('dolar-magic').textContent = planilhas[0].dolar_magic  || '0.00';
+        } else {
+          document.getElementById('dolar-cambio').value      = '0';
+          document.getElementById('dolar-magic').textContent = '0.00';
+        }
+
+        montarEmissao(planilhas);
+
+        // Listeners de recálculo
+        document
+          .querySelectorAll('#spreadsheet-info input, #spreadsheet-info select')
+          .forEach(el => el.addEventListener('input', calcularValoresPlanilha));
+        calcularValoresPlanilha();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao carregar planilha: ' + err.message);
+      }
+    }
+
+    function montarPlanilhaPrincipal(planilhas) {
+      const cont = document.getElementById('spreadsheet-info');
+      cont.innerHTML = '';
+
+      planilhas.forEach(linha => {
+        const row = `
+          <tr data-planilha-id="${linha.id}">
+            <td><input type="text" name="produto" value="${linha.produto || ''}"></td>
+            <td><input type="date" name="data" value="${linha.data || ''}"></td>
+            <td>
+              <select name="idade">
+                <option value="ADT" ${linha.idade === 'ADT' ? 'selected' : ''}>ADT</option>
+                <option value="CHD" ${linha.idade === 'CHD' ? 'selected' : ''}>CHD</option>
+              </select>
+            </td>
+            <td><input type="number" name="netDollar" value="${linha.net_usd || 0}"></td>
+            <td><input type="number" name="lobista"   value="${linha.lobista || 0}"></td>
+            <td><input type="number" name="quantidade" value="${linha.quantidade || 0}"></td>
+            <td name="totalDollar">${linha.total_usd || '0.00'}</td>
+            <td name="netReal">${linha.net_brl || '0.00'}</td>
+            <td><input type="number" name="margem" step="0.01" value="${linha.margem || 0}"></td>
+            <td name="totalPix">${linha.total_pix || '0.00'}</td>
+            <td><input type="number" name="taxa" step="0.01" value="${linha.taxa || 0}"></td>
+            <td name="total10x">${linha.total_10x || '0.00'}</td>
+            <td>
+              <button class="delete-row-button" onclick="deleteRow(this)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        cont.insertAdjacentHTML('beforeend', row);
+      });
+    }
+
+    function montarEmissao(planilhas) {
+      const emissionCont = document.getElementById('emission-info');
+      emissionCont.innerHTML = '';
+
+      if (!planilhas.length) {
+        emissionCont.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nenhuma informação disponível</td></tr>';
+        return;
+      }
+
+      planilhas.forEach(item => {
+        const row = `
+          <tr data-planilha-id="${item.id}">
+            <td><span>${item.produto || ''}</span></td>
+            <td><span>${item.net_usd ? parseFloat(item.net_usd).toFixed(2) : '0.00'}</span></td>
+            <td><span>${item.data ? formatDate(item.data) : ''}</span></td>
+            <td><input type="date" name="dataPagamento" value="${item.data_pagamento || ''}"></td>
+            <td><input type="text" name="identificador" value="${item.identificador || ''}"></td>
+            <td><input type="text" name="fornecedor"    value="${item.fornecedor || ''}"></td>
+            <td>
+              <select name="status">
+                <option value="Aguardando Emissão"   ${item.status === 'Aguardando Emissão' ? 'selected' : ''}>Aguardando Emissão</option>
+                <option value="Emissão Bloqueada"    ${item.status === 'Emissão Bloqueada'  ? 'selected' : ''}>Emissão Bloqueada</option>
+                <option value="Emitido – Não Pago"   ${item.status === 'Emitido – Não Pago' ? 'selected' : ''}>Emitido – Não Pago</option>
+                <option value="Emitido TIF"          ${item.status === 'Emitido TIF'        ? 'selected' : ''}>Emitido TIF</option>
+                <option value="Concluído"            ${item.status === 'Concluído'          ? 'selected' : ''}>Concluído</option>
+              </select>
+            </td>
+          </tr>
+        `;
+        emissionCont.insertAdjacentHTML('beforeend', row);
+      });
+    }
+
+    function addNewRow() {
+      const cont = document.getElementById('spreadsheet-info');
+      const row = `
+        <tr>
+          <td><input type="text" name="produto"></td>
+          <td><input type="date" name="data"></td>
+          <td>
+            <select name="idade">
+              <option value="ADT">ADT</option>
+              <option value="CHD">CHD</option>
+            </select>
+          </td>
+          <td><input type="number" name="netDollar"></td>
+          <td><input type="number" name="lobista"></td>
+          <td><input type="number" name="quantidade"></td>
+          <td name="totalDollar">0.00</td>
+          <td name="netReal">0.00</td>
+          <td><input type="number" name="margem" step="0.01"></td>
+          <td name="totalPix">0.00</td>
+          <td><input type="number" name="taxa" step="0.01"></td>
+          <td name="total10x">0.00</td>
+          <td>
+            <button class="delete-row-button" onclick="deleteRow(this)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+      cont.insertAdjacentHTML('beforeend', row);
+
+      // Escuta de recálculo
+      cont.querySelectorAll('input, select').forEach(el => {
+        el.removeEventListener('input', calcularValoresPlanilha);
+        el.addEventListener('input', calcularValoresPlanilha);
+      });
+    }
+
+    async function deleteRow(button) {
+      const row        = button.closest('tr');
+      const planilhaId = row.getAttribute('data-planilha-id');
+      if (!planilhaId) {
+        // Linha nova
+        if (confirm('Linha não salva. Remover assim mesmo?')) {
+          row.remove();
+          calcularValoresPlanilha();
+        }
+        return;
+      }
+      if (!confirm('Tem certeza que deseja excluir esta linha?')) return;
+
+      const pedidoId = document.getElementById('pedido-id').textContent;
+      try {
+        const resp = await fetch('https://magictraveltur.com/api_planilhas.php', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_pedido: pedidoId, id: planilhaId }),
+          credentials: 'include'
+        });
+        if (!resp.ok) {
+          const textErr = await resp.text();
+          throw new Error(`Erro ao excluir: ${resp.status} - ${textErr}`);
+        }
+        const result = await resp.json();
+        if (result.status === 'success' || result.message === 'Registro excluído com sucesso.') {
+          alert('Linha excluída!');
+          row.remove();
+          calcularValoresPlanilha();
+        } else {
+          alert('Erro ao excluir: ' + (result.message || 'desconhecido'));
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Não foi possível excluir a linha. Veja o console.');
+      }
+    }
+
+    /************************************************************
+     * 5) SALVAR PLANILHA
+     ************************************************************/
+    async function salvarPlanilha() {
+      const pedidoId = document.getElementById('pedido-id').textContent;
+      if (!pedidoId) {
+        alert('ID do pedido não encontrado.');
+        return;
+      }
+      const dolarCambio= parseFloat(document.getElementById('dolar-cambio').value) || 0;
+      const dolarMagic = parseFloat(document.getElementById('dolar-magic').textContent) || 0;
+      const linhas     = document.querySelectorAll('#spreadsheet-info tr');
+
+      const novos      = [];
+      const existentes = [];
+
+      for (let linha of linhas) {
+        const planilhaId = linha.getAttribute('data-planilha-id');
+        const produto    = (linha.querySelector('input[name="produto"]')?.value || '').trim();
+        const data       = linha.querySelector('input[name="data"]')?.value || '';
+        const idade      = linha.querySelector('select[name="idade"]')?.value || '';
+        const netDollar  = parseFloat(linha.querySelector('input[name="netDollar"]')?.value) || 0;
+        const lobista    = parseFloat(linha.querySelector('input[name="lobista"]')?.value) || 0;
+        const quantidade = parseInt(linha.querySelector('input[name="quantidade"]')?.value) || 0;
+        const margem     = parseFloat(linha.querySelector('input[name="margem"]')?.value) || 0;
+        const taxa       = parseFloat(linha.querySelector('input[name="taxa"]')?.value) || 0;
+
+        // Cálculo
+        const totalUsd = (netDollar + lobista) * quantidade;
+        const netBrl   = totalUsd * dolarMagic;
+        const totalPix = netBrl / (1 - (margem / 100));
+        const total10x = totalPix / (1 - (taxa / 100));
+
+        if (!produto || !data) {
+          alert('Campos obrigatórios (produto e data) não preenchidos.');
+          return;
+        }
+
+        const objLinha = {
+          id_pedido:    pedidoId,
+          produto,
+          data,
+          idade,
+          net_usd:      netDollar,
+          lobista,
+          quantidade,
+          total_usd:    totalUsd,
+          net_brl:      netBrl,
+          margem,
+          total_pix:    totalPix,
+          taxa,
+          total_10x:    total10x,
+          dolar_cambio: dolarCambio,
+          dolar_magic:  dolarMagic
+        };
+
+        if (!planilhaId) {
+          novos.push(objLinha);
+        } else {
+          const original = window.planilhasEmMemoria.find(p => p.id == planilhaId);
+          if (!original) {
+            novos.push(objLinha);
+          } else {
+            const atualizado = { ...original };
+            atualizado.produto      = produto;
+            atualizado.data         = data;
+            atualizado.idade        = idade;
+            atualizado.net_usd      = netDollar;
+            atualizado.lobista      = lobista;
+            atualizado.quantidade   = quantidade;
+            atualizado.total_usd    = totalUsd;
+            atualizado.net_brl      = netBrl;
+            atualizado.margem       = margem;
+            atualizado.total_pix    = totalPix;
+            atualizado.taxa         = taxa;
+            atualizado.total_10x    = total10x;
+            atualizado.dolar_cambio = dolarCambio;
+            atualizado.dolar_magic  = dolarMagic;
+
+            existentes.push(atualizado);
+          }
+        }
+      }
+
+      try {
+        // POST (novos)
+        if (novos.length > 0) {
+          const resPost = await fetch('https://magictraveltur.com/api_planilhas.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(novos)
+          });
+          if (!resPost.ok) {
+            const txtErr = await resPost.text();
+            throw new Error('Erro no POST: ' + txtErr);
+          }
+        }
+        // PUT (existentes)
+        if (existentes.length > 0) {
+          const resPut = await fetch('https://magictraveltur.com/api_planilhas.php', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(existentes)
+          });
+          if (!resPut.ok) {
+            const txtErr = await resPut.text();
+            throw new Error('Erro no PUT: ' + txtErr);
+          }
+        }
+
+        if (novos.length === 0 && existentes.length === 0) {
+          alert('Nenhuma linha para salvar.');
+          return;
+        }
+        alert('Planilha salva com sucesso!');
+        await loadPlanilhaPedido();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar planilha: ' + err.message);
+      }
+    }
+
+    /************************************************************
+     * 6) SALVAR EMISSÃO
+     ************************************************************/
+    async function salvarEmissao() {
+      const pedidoId     = document.getElementById('pedido-id').textContent;
+      const emissionRows = document.querySelectorAll('#emission-info tr');
+
+      if (!pedidoId) {
+        alert('ID do pedido não encontrado para Emissão.');
+        return;
+      }
+
+      const updates = [];
+      emissionRows.forEach(row => {
+        const planilhaId = row.getAttribute('data-planilha-id');
+        if (!planilhaId) return;
+
+        const original = window.planilhasEmMemoria.find(p => p.id == planilhaId);
+        if (!original) return;
+
+        const dataPagamento = row.querySelector('input[name="dataPagamento"]')?.value || null;
+        const identificador = row.querySelector('input[name="identificador"]')?.value || '';
+        const fornecedor    = row.querySelector('input[name="fornecedor"]')?.value || '';
+        const status        = row.querySelector('select[name="status"]')?.value || '';
+
+        const objPUT = { ...original };
+        objPUT.data_pagamento = dataPagamento;
+        objPUT.identificador  = identificador;
+        objPUT.fornecedor     = fornecedor;
+        objPUT.status         = status;
+
+        updates.push(objPUT);
+      });
+
+      if (!updates.length) {
+        alert('Nenhuma linha de Emissão para atualizar.');
+        return;
+      }
+
+      try {
+        const resPut = await fetch('https://magictraveltur.com/api_planilhas.php', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(updates)
+        });
+        if (!resPut.ok) {
+          const txtErr = await resPut.text();
+          throw new Error('Erro no PUT (Emissão): ' + txtErr);
+        }
+        alert('Emissão atualizada com sucesso!');
+        await loadPlanilhaPedido();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar Emissão: ' + err.message);
+      }
+    }
+
+    /************************************************************
+     * 7) CÁLCULOS DA PLANILHA
+     ************************************************************/
+    function calcularValoresPlanilha() {
+      const dolarMagic = parseFloat(document.getElementById('dolar-magic').textContent) || 0;
+      const rows = document.querySelectorAll('#spreadsheet-info tr');
+      rows.forEach(row => {
+        const netDollar  = parseFloat(row.querySelector('input[name="netDollar"]')?.value) || 0;
+        const lobista    = parseFloat(row.querySelector('input[name="lobista"]')?.value) || 0;
+        const quantidade = parseInt(row.querySelector('input[name="quantidade"]')?.value) || 0;
+        const margemVal  = (parseFloat(row.querySelector('input[name="margem"]')?.value) || 0) / 100;
+        const taxaVal    = (parseFloat(row.querySelector('input[name="taxa"]')?.value) || 0) / 100;
+
+        const totalDollar = (netDollar + lobista) * quantidade;
+        const netReal     = totalDollar * dolarMagic;
+        const totalPix    = netReal / (1 - margemVal);
+        const total10x    = totalPix / (1 - taxaVal);
+
+        row.querySelector('td[name="totalDollar"]').textContent = totalDollar.toFixed(2);
+        row.querySelector('td[name="netReal"]').textContent     = netReal.toFixed(2);
+        row.querySelector('td[name="totalPix"]').textContent    = totalPix.toFixed(2);
+        row.querySelector('td[name="total10x"]').textContent    = total10x.toFixed(2);
+      });
+      calcularResumo();
+    }
+
+    function calcularResumo() {
+      let totalDollar = 0, totalReal = 0, totalPix = 0, total10x = 0;
+      document.querySelectorAll('#spreadsheet-info tr').forEach(row => {
+        totalDollar += parseFloat(row.querySelector('td[name="totalDollar"]')?.textContent) || 0;
+        totalReal   += parseFloat(row.querySelector('td[name="netReal"]').textContent)     || 0;
+        totalPix    += parseFloat(row.querySelector('td[name="totalPix"]').textContent)    || 0;
+        total10x    += parseFloat(row.querySelector('td[name="total10x"]').textContent)    || 0;
+      });
+      document.getElementById('resumo-total-dollar').textContent = totalDollar.toFixed(2);
+      document.getElementById('resumo-net-real').textContent      = totalReal.toFixed(2);
+      document.getElementById('resumo-total-pix').textContent     = totalPix.toFixed(2);
+      document.getElementById('resumo-total-10x').textContent     = total10x.toFixed(2);
+    }
+
+    function updateDolarMagic() {
+      const dolarCambio = parseFloat(document.getElementById('dolar-cambio').value) || 0;
+      // Ajuste esse fator conforme desejar
+      const dolarMagic  = (dolarCambio * 1.0098).toFixed(2);
+      document.getElementById('dolar-magic').textContent = dolarMagic;
+      calcularValoresPlanilha();
+    }
+
+    /************************************************************
+     * 8) INICIAR
+     ************************************************************/
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1) Carregar sidebar
+      loadSidebar();
+
+      // 2) Carregar dados do pedido
+      loadOrderDetails();
+
+      // 3) Listeners
+      document.getElementById('dolar-cambio').addEventListener('input', updateDolarMagic);
+      document.getElementById('add-row-button').addEventListener('click', addNewRow);
+    });
+  </script>
+</body>
+</html>
